@@ -1,0 +1,75 @@
+# Testing Rules
+
+## Test Organization
+- Organize tests to mirror the source code structure
+- Use clear, descriptive test file names
+- Group related tests in appropriate test suites
+- Separate unit, integration, and end-to-end tests
+- Use consistent naming conventions for test files and functions
+
+## Test Structure
+- Follow the AAA pattern (Arrange, Act, Assert)
+- Keep tests focused and single-purpose
+- Use descriptive test names that explain the scenario
+- Group related test cases in describe blocks
+- Maintain consistent test structure across all test files
+
+## Test Quality
+- Write tests that are independent and isolated
+- Avoid test interdependencies
+- Use meaningful assertions with clear failure messages
+- Test both positive and negative scenarios
+- Include edge cases and boundary conditions
+- Keep tests fast and reliable
+
+## Test Coverage
+- Aim for comprehensive coverage of business logic
+- Focus on critical paths and error conditions
+- Test public APIs and interfaces thoroughly
+- Include integration tests for component interactions
+- Maintain minimum coverage thresholds
+- Regularly review and update coverage goals
+
+## Mocking and Stubbing
+- Mock external dependencies appropriately
+- Use realistic test data and fixtures
+- Avoid over-mocking - test real behavior when possible
+- Document mock behavior and expectations
+- Use consistent mocking patterns across tests
+- Use a standard mocking library such as mockito where mocks are needed
+
+## Test Data Management
+- Use factories or builders for test data creation
+- Keep test data minimal and focused
+- Avoid hardcoded test values when possible
+- Use data providers for parameterized tests
+- Clean up test data after each test
+
+## Performance Testing
+- Include performance tests for critical paths
+- Set appropriate performance benchmarks
+- Test under realistic load conditions
+- Monitor test execution times
+- Optimize slow-running tests
+
+## Test Maintenance
+- Keep tests up to date with code changes
+- Refactor tests when code is refactored
+- Remove obsolete or redundant tests
+- Update test documentation as needed
+- Regularly review test quality and effectiveness
+
+## Continuous Integration
+- Ensure all tests pass before merging
+- Run tests in CI/CD pipeline
+- Include test coverage reporting
+- Set up automated test execution
+- Monitor test flakiness and address issues
+
+## Documentation
+- Document complex test scenarios
+- Include setup instructions for test environment
+- Maintain test runbooks and troubleshooting guides
+- Document test data requirements
+- Keep test documentation current 
+- Use junit 5 for all unit tests.

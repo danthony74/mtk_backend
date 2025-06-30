@@ -1,0 +1,42 @@
+# Data Directory Rules
+
+## Data Organization
+- Use clear, descriptive file names
+- Organize data by type, source, or date
+- Maintain consistent naming conventions
+- Use appropriate file formats for different data types
+
+## Data Quality
+- Validate data before processing
+- Document data sources and lineage
+- Maintain data integrity and consistency
+- Handle missing or corrupted data appropriately
+- Version control data schemas and transformations
+
+## Data Security
+- Never store sensitive data in plain text
+- Use appropriate access controls
+- Encrypt data at rest when necessary
+- Follow data privacy regulations (GDPR, CCPA, etc.)
+- Implement proper data retention policies
+
+## Data Processing
+- Document all data transformations
+- Use reproducible data processing pipelines
+- Maintain audit trails for data changes
+- Test data processing scripts thoroughly
+- Handle large datasets efficiently
+
+## File Management
+- Use appropriate file formats (CSV, JSON, Parquet, etc.)
+- Compress large files when appropriate
+- Maintain backup copies of important data
+- Clean up temporary files regularly
+- Document file dependencies and relationships
+
+## Data Documentation
+- Include README files for datasets
+- Document data schemas and field definitions
+- Maintain data dictionaries
+- Record data quality metrics
+- Document any data cleaning or preprocessing steps 

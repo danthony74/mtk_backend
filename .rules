@@ -1,0 +1,33 @@
+# Mind The Kid - Project Rules
+
+## Project Structure
+- `src/` - Source code and application logic
+- `data/` - Data files, datasets, and data-related resources such as SQL files
+- `iac/` - Infrastructure as Code (Terraform, CloudFormation, etc.). This project uses Terraform.
+- `scripts/` - Utility scripts and automation tools
+
+## General Guidelines
+- Follow consistent naming conventions across all directories
+- Document all major changes and decisions
+- Use meaningful commit messages
+- Keep dependencies up to date
+- Test thoroughly before committing changes
+
+## Code Quality
+- Write clean, readable, and maintainable code
+- Include appropriate comments and documentation
+- Follow language-specific best practices
+- Use linting and formatting tools
+- Implement proper error handling
+
+## Security
+- Never commit sensitive information (API keys, passwords, etc.)
+- Use environment variables for configuration
+- Follow security best practices for your technology stack
+- Regularly review and update dependencies
+
+## Collaboration
+- Review code before merging
+- Communicate changes clearly
+- Help maintain project documentation
+- Respect coding standards and conventions 

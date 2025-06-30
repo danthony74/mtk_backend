@@ -1,0 +1,49 @@
+# Scripts Directory Rules
+
+## Script Organization
+- Use descriptive file names that indicate purpose
+- Organize scripts by function or domain
+- Use consistent naming conventions
+- Group related scripts in subdirectories when appropriate
+
+## Script Quality
+- Write scripts that are idempotent when possible
+- Include proper error handling and exit codes
+- Use meaningful variable names and comments
+- Implement logging for debugging and monitoring
+- Make scripts reusable and configurable
+
+## Security Considerations
+- Validate all inputs and parameters
+- Use appropriate file permissions
+- Avoid hardcoding sensitive information
+- Implement proper authentication when needed
+- Sanitize user inputs to prevent injection attacks
+
+## Documentation
+- Include usage instructions in script headers
+- Document all parameters and options
+- Provide examples of common use cases
+- Maintain README files for complex scripts
+- Document dependencies and requirements
+
+## Testing and Validation
+- Test scripts in a safe environment first
+- Include validation for expected inputs
+- Implement proper error handling
+- Test edge cases and failure scenarios
+- Use linting tools for script quality
+
+## Automation Best Practices
+- Use configuration files for settings
+- Implement proper logging and monitoring
+- Make scripts configurable via environment variables
+- Include progress indicators for long-running scripts
+- Implement proper cleanup procedures
+
+## Maintenance
+- Keep scripts up to date with system changes
+- Remove deprecated or unused scripts
+- Update documentation when scripts change
+- Monitor script performance and optimize as needed
+- Version control all script changes 
