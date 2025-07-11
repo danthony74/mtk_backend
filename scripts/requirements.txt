@@ -1,0 +1,28 @@
+# Terraform Management Scripts Requirements
+# Python 3.7+ required
+
+# Core dependencies
+pathlib2>=2.3.0; python_version < "3.4"
+typing-extensions>=4.0.0; python_version < "3.8"
+
+# AWS SDK (optional, for enhanced functionality)
+boto3>=1.26.0
+botocore>=1.29.0
+
+# Database connectivity
+psycopg2-binary>=2.9.0
+
+# JSON handling (built-in, but listed for clarity)
+# json - built-in module
+
+# Logging (built-in, but listed for clarity)
+# logging - built-in module
+
+# Subprocess (built-in, but listed for clarity)
+# subprocess - built-in module
+
+# Time handling (built-in, but listed for clarity)
+# time - built-in module
+
+# Argument parsing (built-in, but listed for clarity)
+# argparse - built-in module 
