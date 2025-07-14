@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence xmlns="http://xmlns.jcp.org/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org/xml/ns/persistence/persistence_2_2.xsd"
+             version="2.2">
+    <persistence-unit name="mtkPU" transaction-type="RESOURCE_LOCAL">
+        <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+        <class>com.mindthekid.models.User</class>
+        <class>com.mindthekid.models.Address</class>
+        <class>com.mindthekid.models.Country</class>
+        <class>com.mindthekid.models.CountryState</class>
+        <class>com.mindthekid.models.Family</class>
+        <class>com.mindthekid.models.FamilyMembership</class>
+        <class>com.mindthekid.models.FamilyMemberType</class>
+        <class>com.mindthekid.models.Frequency</class>
+        <class>com.mindthekid.models.Gender</class>
+        <class>com.mindthekid.models.ShareType</class>
+        <class>com.mindthekid.models.SubscriptionType</class>
+        <class>com.mindthekid.models.UserAddress</class>
+        <class>com.mindthekid.models.UserLocation</class>
+        <class>com.mindthekid.models.UserShare</class>
+        <class>com.mindthekid.models.UserSubscription</class>
+        <properties>
+            <property name="javax.persistence.jdbc.driver" value="org.postgresql.Driver"/>
+            <property name="javax.persistence.jdbc.url" value="${DB_URL}"/>
+            <property name="javax.persistence.jdbc.user" value="${DB_USER}"/>
+            <property name="javax.persistence.jdbc.password" value="${DB_PASSWORD}"/>
+            <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect"/>
+            <property name="hibernate.hbm2ddl.auto" value="validate"/>
+            <property name="hibernate.show_sql" value="true"/>
+            <property name="hibernate.format_sql" value="true"/>
+        </properties>
+    </persistence-unit>
+</persistence> 
