@@ -1,98 +1,98 @@
 # VPC Outputs
 output "vpc_id" {
   description = "VPC ID"
-  value       = aws_vpc.main.id
+  value       = module.network.vpc_id
 }
 
 output "vpc_cidr" {
   description = "VPC CIDR block"
-  value       = aws_vpc.main.cidr_block
+  value       = module.network.vpc_cidr_block
 }
 
 output "public_subnet_ids" {
   description = "Public subnet IDs"
-  value       = aws_subnet.public[*].id
+  value       = module.network.public_subnet_ids
 }
 
 output "private_subnet_ids" {
   description = "Private subnet IDs"
-  value       = aws_subnet.private[*].id
+  value       = module.network.private_subnet_ids
 }
 
 output "database_subnet_ids" {
   description = "Database subnet IDs"
-  value       = aws_subnet.database[*].id
+  value       = module.network.database_subnet_ids
 }
 
 # Aurora PostgreSQL Outputs
 output "aurora_cluster_id" {
   description = "Aurora cluster ID"
-  value       = aws_rds_cluster.aurora.id
+  value       = module.database.aurora_cluster_id
 }
 
 output "aurora_cluster_endpoint" {
   description = "Aurora cluster endpoint"
-  value       = aws_rds_cluster.aurora.endpoint
+  value       = module.database.aurora_cluster_endpoint
 }
 
 output "aurora_cluster_reader_endpoint" {
   description = "Aurora cluster reader endpoint"
-  value       = aws_rds_cluster.aurora.reader_endpoint
+  value       = module.database.aurora_cluster_reader_endpoint
 }
 
 output "aurora_instance_ids" {
   description = "Aurora instance IDs"
-  value       = aws_rds_cluster_instance.aurora[*].id
+  value       = module.database.aurora_instance_ids
 }
 
 output "aurora_cluster_arn" {
   description = "Aurora cluster ARN"
-  value       = aws_rds_cluster.aurora.arn
+  value       = module.database.aurora_cluster_id
 }
 
 # DynamoDB Outputs
 output "dynamodb_table_name" {
   description = "DynamoDB table name"
-  value       = aws_dynamodb_table.user_locations.name
+  value       = module.dynamodb.dynamodb_table_name
 }
 
 output "dynamodb_table_arn" {
   description = "DynamoDB table ARN"
-  value       = aws_dynamodb_table.user_locations.arn
+  value       = module.dynamodb.dynamodb_table_arn
 }
 
 output "dynamodb_table_stream_arn" {
   description = "DynamoDB table stream ARN"
-  value       = var.enable_global_tables ? aws_dynamodb_table.user_locations_with_stream[0].stream_arn : null
+  value       = module.dynamodb.dynamodb_stream_table_arn
 }
 
 # IPAM Outputs
 output "ipam_id" {
   description = "IPAM ID"
-  value       = aws_vpc_ipam.main.id
+  value       = module.network.vpc_id
 }
 
 output "ipam_pool_id" {
   description = "IPAM pool ID"
-  value       = aws_vpc_ipam_pool.main.id
+  value       = module.network.vpc_id
 }
 
 # Security Group Outputs
 output "database_security_group_id" {
   description = "Database security group ID"
-  value       = aws_security_group.database.id
+  value       = module.network.database_security_group_id
 }
 
 output "application_security_group_id" {
   description = "Application security group ID"
-  value       = aws_security_group.application.id
+  value       = module.network.application_security_group_id
 }
 
 # Connection Information
 output "database_connection_info" {
   description = "Database connection information"
   value = {
-    host     = aws_rds_cluster.aurora.endpoint
+    host     = module.database.aurora_cluster_endpoint
     port     = 5432
     database = var.db_name
     username = var.db_username
@@ -103,7 +103,58 @@ output "database_connection_info" {
 output "dynamodb_connection_info" {
   description = "DynamoDB connection information"
   value = {
-    table_name = aws_dynamodb_table.user_locations.name
+    table_name = module.dynamodb.dynamodb_table_name
     region     = var.aws_region
   }
+}
+
+# API Gateway Outputs
+output "api_gateway_id" {
+  description = "The ID of the API Gateway"
+  value       = module.apigateway.api_gateway_id
+}
+
+output "api_gateway_invoke_url" {
+  description = "The invoke URL of the API Gateway"
+  value       = module.apigateway.api_gateway_invoke_url
+}
+
+output "api_gateway_stage_arn" {
+  description = "The ARN of the API Gateway stage"
+  value       = module.apigateway.api_gateway_stage_arn
+}
+
+output "cognito_user_pool_id" {
+  description = "The ID of the Cognito User Pool"
+  value       = module.apigateway.cognito_user_pool_id
+}
+
+output "cognito_user_pool_client_id" {
+  description = "The ID of the Cognito User Pool Client"
+  value       = module.apigateway.cognito_user_pool_client_id
+}
+
+output "cognito_user_pool_domain_url" {
+  description = "The full URL of the Cognito User Pool domain"
+  value       = module.apigateway.cognito_user_pool_domain_url
+}
+
+output "api_gateway_authorizer_id" {
+  description = "The ID of the API Gateway authorizer"
+  value       = module.apigateway.api_gateway_authorizer_id
+}
+
+output "waf_web_acl_id" {
+  description = "The ID of the WAF Web ACL"
+  value       = module.apigateway.waf_web_acl_id
+}
+
+output "oauth_configuration" {
+  description = "OAuth configuration for the API Gateway"
+  value       = module.apigateway.oauth_configuration
+}
+
+output "api_endpoints" {
+  description = "API Gateway endpoints"
+  value       = module.apigateway.api_endpoints
 } 

@@ -26,11 +26,12 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 class TerraformManager:
-    def __init__(self, environment: str, terraform_dir: str = "iac"):
+    def __init__(self, environment: str, terraform_dir: str = "iac", tf_file: str = None):
         self.environment = environment
         self.terraform_dir = Path(terraform_dir)
         self.var_file = f"terraform.tfvars.{environment}"
         self.state_file = f"terraform.tfstate.{environment}"
+        self.tf_file = tf_file
         
         # Validate environment
         valid_environments = ["dev", "qa", "prod"]
@@ -46,7 +47,18 @@ class TerraformManager:
         if not var_file_path.exists():
             raise FileNotFoundError(f"Variable file not found: {var_file_path}")
         
-        logger.info(f"Initialized TerraformManager for environment: {environment}")
+        # Validate tf_file if specified
+        if tf_file:
+            valid_files = ["main", "network", "database", "dynamodb", "lambda", "apigateway"]
+            if tf_file not in valid_files:
+                raise ValueError(f"Terraform file must be one of: {valid_files}")
+            
+            # Check if the specified file exists
+            tf_file_path = self.terraform_dir / f"{tf_file}.tf"
+            if not tf_file_path.exists():
+                raise FileNotFoundError(f"Terraform file not found: {tf_file_path}")
+        
+        logger.info(f"Initialized TerraformManager for environment: {environment}" + (f", file: {tf_file}" if tf_file else ""))
     
     def _run_command(self, command: List[str], capture_output: bool = True) -> Dict:
         """Run a command and return the result."""
@@ -112,6 +124,10 @@ class TerraformManager:
         
         command = ["terraform", "plan", f"-var-file={self.var_file}"]
         
+        if self.tf_file:
+            command.extend(["-target", f"module.{self.tf_file}"])
+            logger.info(f"Targeting specific module: {self.tf_file}")
+        
         if detailed:
             command.append("-detailed-exitcode")
         
@@ -132,6 +148,10 @@ class TerraformManager:
         
         command = ["terraform", "apply", f"-var-file={self.var_file}"]
         
+        if self.tf_file:
+            command.extend(["-target", f"module.{self.tf_file}"])
+            logger.info(f"Targeting specific module: {self.tf_file}")
+        
         if auto_approve:
             command.append("-auto-approve")
         
@@ -149,6 +169,10 @@ class TerraformManager:
         logger.warning(f"Destroying Terraform infrastructure for {self.environment}...")
         
         command = ["terraform", "destroy", f"-var-file={self.var_file}"]
+        
+        if self.tf_file:
+            command.extend(["-target", f"module.{self.tf_file}"])
+            logger.info(f"Targeting specific module: {self.tf_file}")
         
         if auto_approve:
             command.append("-auto-approve")
@@ -211,7 +235,8 @@ class TerraformManager:
     def import_resource(self, resource_address: str, resource_id: str) -> bool:
         """Import an existing resource into Terraform state."""
         logger.info(f"Importing resource {resource_address} with ID {resource_id}...")
-        result = self._run_command(["terraform", "import", resource_address, resource_id])
+        command = ["terraform", "import", resource_address, resource_id]
+        result = self._run_command(command)
         
         if result['success']:
             logger.info(f"Resource {resource_address} imported successfully")
@@ -227,7 +252,7 @@ class TerraformManager:
         
         if result['success'] and result['stdout']:
             workspaces = [ws.strip() for ws in result['stdout'].split('\n') if ws.strip()]
-            logger.info(f"Available workspaces: {workspaces}")
+            logger.info(f"Found workspaces: {workspaces}")
             return workspaces
         else:
             logger.error(f"Failed to list workspaces: {result['stderr']}")
@@ -258,123 +283,63 @@ class TerraformManager:
         return result['success']
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="MTK Backend Terraform Manager",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""
-Examples:
-  python terraform_manager.py dev validate
-  python terraform_manager.py qa plan
-  python terraform_manager.py prod apply --auto-approve
-  python terraform_manager.py dev destroy --auto-approve
-  python terraform_manager.py qa get-state
-  python terraform_manager.py prod get-outputs
-        """
-    )
-    
-    parser.add_argument(
-        "environment",
-        choices=["dev", "qa", "prod"],
-        help="Environment to work with"
-    )
-    
-    parser.add_argument(
-        "action",
-        choices=["init", "validate", "plan", "apply", "destroy", "get-state", "get-outputs", "refresh", "workspace-list"],
-        help="Action to perform"
-    )
-    
-    parser.add_argument(
-        "--terraform-dir",
-        default="iac",
-        help="Directory containing Terraform files (default: iac)"
-    )
-    
-    parser.add_argument(
-        "--auto-approve",
-        action="store_true",
-        help="Skip interactive approval of plan before applying"
-    )
-    
-    parser.add_argument(
-        "--detailed",
-        action="store_true",
-        help="Show detailed plan output"
-    )
-    
-    parser.add_argument(
-        "--workspace",
-        help="Workspace name for workspace operations"
-    )
-    
-    parser.add_argument(
-        "--resource-address",
-        help="Resource address for import operations"
-    )
-    
-    parser.add_argument(
-        "--resource-id",
-        help="Resource ID for import operations"
-    )
+    parser = argparse.ArgumentParser(description="MTK Backend Terraform Manager")
+    parser.add_argument("environment", choices=["dev", "qa", "prod"], help="Environment to work with")
+    parser.add_argument("action", choices=["init", "validate", "plan", "apply", "destroy", "refresh", "output", "state", "workspace"], help="Action to perform")
+    parser.add_argument("--terraform-dir", default="iac", help="Terraform directory path")
+    parser.add_argument("--tf-file", help="Specific Terraform file to target")
+    parser.add_argument("--auto-approve", action="store_true", help="Auto-approve changes")
+    parser.add_argument("--detailed", action="store_true", help="Show detailed output")
+    parser.add_argument("--workspace", help="Workspace name for workspace actions")
+    parser.add_argument("--resource-address", help="Resource address for import")
+    parser.add_argument("--resource-id", help="Resource ID for import")
     
     args = parser.parse_args()
     
     try:
-        # Initialize TerraformManager
-        tf_manager = TerraformManager(args.environment, args.terraform_dir)
+        tf_manager = TerraformManager(args.environment, args.terraform_dir, args.tf_file)
         
-        # Perform the requested action
         success = False
         
         if args.action == "init":
             success = tf_manager.init()
-        
         elif args.action == "validate":
             success = tf_manager.validate()
-        
         elif args.action == "plan":
             success = tf_manager.plan(detailed=args.detailed)
-        
         elif args.action == "apply":
             success = tf_manager.apply(auto_approve=args.auto_approve)
-        
         elif args.action == "destroy":
             success = tf_manager.destroy(auto_approve=args.auto_approve)
-        
-        elif args.action == "get-state":
-            state = tf_manager.get_state()
-            if state:
-                print(json.dumps(state, indent=2))
-                success = True
-            else:
-                success = False
-        
-        elif args.action == "get-outputs":
+        elif args.action == "refresh":
+            success = tf_manager.refresh()
+        elif args.action == "output":
             outputs = tf_manager.get_outputs()
             if outputs:
                 print(json.dumps(outputs, indent=2))
                 success = True
             else:
                 success = False
-        
-        elif args.action == "refresh":
-            success = tf_manager.refresh()
-        
-        elif args.action == "workspace-list":
-            workspaces = tf_manager.workspace_list()
-            if workspaces:
-                print("Available workspaces:")
-                for ws in workspaces:
-                    print(f"  {ws}")
+        elif args.action == "state":
+            state = tf_manager.get_state()
+            if state:
+                print(json.dumps(state, indent=2))
                 success = True
             else:
                 success = False
+        elif args.action == "workspace":
+            if args.workspace:
+                success = tf_manager.workspace_select(args.workspace)
+            else:
+                workspaces = tf_manager.workspace_list()
+                print(json.dumps(workspaces, indent=2))
+                success = True
         
-        # Exit with appropriate code
-        sys.exit(0 if success else 1)
-    
+        if not success:
+            sys.exit(1)
+            
     except Exception as e:
-        logger.error(f"Error: {e}")
+        logger.error(f"Terraform manager failed: {e}")
         sys.exit(1)
 
 if __name__ == "__main__":

@@ -3,20 +3,20 @@ resource "aws_vpc_ipam" "main" {
   description = "MTK Backend IPAM"
   
   tags = {
-    Name = "${var.environment}_${var.aws_region}_ipam"
+    Name = "IPAM-MTKBackend-${var.aws_region}-${var.availability_zone}"
   }
 }
 
 resource "aws_vpc_ipam_pool" "main" {
   address_family = "ipv4"
   ipam_scope_id  = aws_vpc_ipam.main.private_default_scope_id
-  name           = "${var.environment}_${var.aws_region}_pool"
+  name           = "IPAMPool-MTKBackend-${var.aws_region}-${var.availability_zone}"
   description    = var.ipam_pool_description
   
   source_default = true
   
   tags = {
-    Name = "${var.environment}_${var.aws_region}_pool"
+    Name = "IPAMPool-MTKBackend-${var.aws_region}-${var.availability_zone}"
   }
 }
 
@@ -34,7 +34,7 @@ resource "aws_vpc" "main" {
   enable_dns_support   = true
   
   tags = {
-    Name = "${var.environment}_${var.aws_region}_vpc"
+    Name = "VPC-MTKBackend-${var.aws_region}-${var.availability_zone}"
   }
 }
 
@@ -43,7 +43,7 @@ resource "aws_internet_gateway" "main" {
   vpc_id = aws_vpc.main.id
   
   tags = {
-    Name = "${var.environment}_${var.aws_region}_igw"
+    Name = "IGW-MTKBackend-${var.aws_region}-${var.availability_zone}"
   }
 }
 
@@ -57,7 +57,7 @@ resource "aws_subnet" "public" {
   map_public_ip_on_launch = true
   
   tags = {
-    Name = "${var.environment}_${var.aws_region}_${data.aws_availability_zones.available.names[count.index]}_public"
+    Name = "Subnet-Public-MTKBackend-${var.aws_region}-${data.aws_availability_zones.available.names[count.index]}"
   }
 }
 
@@ -69,7 +69,7 @@ resource "aws_subnet" "private" {
   availability_zone = data.aws_availability_zones.available.names[count.index]
   
   tags = {
-    Name = "${var.environment}_${var.aws_region}_${data.aws_availability_zones.available.names[count.index]}_private"
+    Name = "Subnet-Private-MTKBackend-${var.aws_region}-${data.aws_availability_zones.available.names[count.index]}"
   }
 }
 
@@ -81,7 +81,7 @@ resource "aws_subnet" "database" {
   availability_zone = data.aws_availability_zones.available.names[count.index]
   
   tags = {
-    Name = "${var.environment}_${var.aws_region}_${data.aws_availability_zones.available.names[count.index]}_database"
+    Name = "Subnet-Database-MTKBackend-${var.aws_region}-${data.aws_availability_zones.available.names[count.index]}"
   }
 }
 
@@ -95,7 +95,7 @@ resource "aws_route_table" "public" {
   }
   
   tags = {
-    Name = "${var.environment}_${var.aws_region}_public_rt"
+    Name = "RouteTable-Public-MTKBackend-${var.aws_region}-${var.availability_zone}"
   }
 }
 
@@ -103,7 +103,7 @@ resource "aws_route_table" "private" {
   vpc_id = aws_vpc.main.id
   
   tags = {
-    Name = "${var.environment}_${var.aws_region}_private_rt"
+    Name = "RouteTable-Private-MTKBackend-${var.aws_region}-${var.availability_zone}"
   }
 }
 
@@ -128,7 +128,7 @@ resource "aws_route_table_association" "database" {
 
 # Security Groups
 resource "aws_security_group" "database" {
-  name_prefix = "${var.environment}_${var.aws_region}_database_"
+  name_prefix = "SecurityGroup-Database-MTKBackend-${var.aws_region}-${var.availability_zone}-"
   vpc_id      = aws_vpc.main.id
   
   ingress {
@@ -146,12 +146,12 @@ resource "aws_security_group" "database" {
   }
   
   tags = {
-    Name = "${var.environment}_${var.aws_region}_database_sg"
+    Name = "SecurityGroup-Database-MTKBackend-${var.aws_region}-${var.availability_zone}"
   }
 }
 
 resource "aws_security_group" "application" {
-  name_prefix = "${var.environment}_${var.aws_region}_app_"
+  name_prefix = "SecurityGroup-Application-MTKBackend-${var.aws_region}-${var.availability_zone}-"
   vpc_id      = aws_vpc.main.id
   
   ingress {
@@ -176,6 +176,6 @@ resource "aws_security_group" "application" {
   }
   
   tags = {
-    Name = "${var.environment}_${var.aws_region}_app_sg"
+    Name = "SecurityGroup-Application-MTKBackend-${var.aws_region}-${var.availability_zone}"
   }
 } 

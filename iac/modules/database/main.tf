@@ -1,6 +1,6 @@
 # Aurora PostgreSQL Cluster
 resource "aws_rds_cluster" "aurora" {
-  cluster_identifier     = "${var.environment}-${var.aws_region}-aurora-cluster"
+  cluster_identifier     = "Aurora-MTKBackend-${var.aws_region}-${var.availability_zone}"
   engine                = "aurora-postgresql"
   engine_version        = var.db_engine_version
   database_name         = var.db_name
@@ -21,21 +21,21 @@ resource "aws_rds_cluster" "aurora" {
   
   # Network
   db_subnet_group_name   = aws_db_subnet_group.aurora.name
-  vpc_security_group_ids = [aws_security_group.database.id]
+  vpc_security_group_ids = [var.database_security_group_id]
   
   # Monitoring
   enabled_cloudwatch_logs_exports = var.enable_cloudwatch_logs ? ["postgresql"] : []
   
   # Tags
   tags = {
-    Name = "${var.environment}_${var.aws_region}_aurora_cluster"
+    Name = "Aurora-MTKBackend-${var.aws_region}-${var.availability_zone}"
   }
 }
 
 # Aurora PostgreSQL Instances
 resource "aws_rds_cluster_instance" "aurora" {
   count               = var.db_cluster_size
-  identifier          = "${var.environment}-${var.aws_region}-aurora-${count.index + 1}"
+  identifier          = "AuroraInstance-MTKBackend-${var.aws_region}-${var.availability_zone}-${count.index + 1}"
   cluster_identifier  = aws_rds_cluster.aurora.id
   instance_class     = var.db_instance_class
   engine             = aws_rds_cluster.aurora.engine
@@ -53,23 +53,23 @@ resource "aws_rds_cluster_instance" "aurora" {
   monitoring_role_arn = aws_iam_role.rds_monitoring.arn
   
   tags = {
-    Name = "${var.environment}_${var.aws_region}_aurora_instance_${count.index + 1}"
+    Name = "AuroraInstance-MTKBackend-${var.aws_region}-${var.availability_zone}-${count.index + 1}"
   }
 }
 
 # Database Subnet Group
 resource "aws_db_subnet_group" "aurora" {
-  name       = "${var.environment}-${var.aws_region}-aurora-subnet-group"
-  subnet_ids = aws_subnet.database[*].id
+  name       = "SubnetGroup-Aurora-MTKBackend-${var.aws_region}-${var.availability_zone}"
+  subnet_ids = var.database_subnet_ids
   
   tags = {
-    Name = "${var.environment}_${var.aws_region}_aurora_subnet_group"
+    Name = "SubnetGroup-Aurora-MTKBackend-${var.aws_region}-${var.availability_zone}"
   }
 }
 
 # IAM Role for RDS Monitoring
 resource "aws_iam_role" "rds_monitoring" {
-  name = "${var.environment}-${var.aws_region}-rds-monitoring-role"
+  name = "IAMRole-RDSMonitoring-MTKBackend-${var.aws_region}-${var.availability_zone}"
   
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -85,7 +85,7 @@ resource "aws_iam_role" "rds_monitoring" {
   })
   
   tags = {
-    Name = "${var.environment}_${var.aws_region}_rds_monitoring_role"
+    Name = "IAMRole-RDSMonitoring-MTKBackend-${var.aws_region}-${var.availability_zone}"
   }
 }
 
@@ -97,7 +97,7 @@ resource "aws_iam_role_policy_attachment" "rds_monitoring" {
 # Parameter Group for Aurora PostgreSQL
 resource "aws_rds_cluster_parameter_group" "aurora" {
   family = "aurora-postgresql15"
-  name   = "${var.environment}-${var.aws_region}-aurora-params"
+  name   = "ParameterGroup-Aurora-MTKBackend-${var.aws_region}-${var.availability_zone}"
   
   parameter {
     name  = "log_statement"
@@ -110,14 +110,14 @@ resource "aws_rds_cluster_parameter_group" "aurora" {
   }
   
   tags = {
-    Name = "${var.environment}_${var.aws_region}_aurora_param_group"
+    Name = "ParameterGroup-Aurora-MTKBackend-${var.aws_region}-${var.availability_zone}"
   }
 }
 
 # Cluster Parameter Group Association
 resource "aws_rds_cluster_parameter_group" "aurora_cluster" {
   family = "aurora-postgresql15"
-  name   = "${var.environment}-${var.aws_region}-aurora-cluster-params"
+  name   = "ClusterParameterGroup-Aurora-MTKBackend-${var.aws_region}-${var.availability_zone}"
   
   parameter {
     name  = "rds.force_ssl"
@@ -125,6 +125,6 @@ resource "aws_rds_cluster_parameter_group" "aurora_cluster" {
   }
   
   tags = {
-    Name = "${var.environment}_${var.aws_region}_aurora_cluster_param_group"
+    Name = "ClusterParameterGroup-Aurora-MTKBackend-${var.aws_region}-${var.availability_zone}"
   }
 } 

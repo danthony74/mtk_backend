@@ -1,6 +1,6 @@
 # DynamoDB Table
 resource "aws_dynamodb_table" "user_locations" {
-  name           = "${var.environment}-${var.aws_region}-user-locations"
+  name           = "DynamoDB-UserLocations-MTKBackend-${var.aws_region}-${var.availability_zone}"
   billing_mode   = var.dynamodb_billing_mode
   hash_key       = "user_id"
   range_key      = "date_time"
@@ -52,7 +52,7 @@ resource "aws_dynamodb_table" "user_locations" {
   
   # Tags
   tags = {
-    Name = "${var.environment}_${var.aws_region}_user_locations_table"
+    Name = "DynamoDB-UserLocations-MTKBackend-${var.aws_region}-${var.availability_zone}"
   }
 }
 
@@ -85,7 +85,7 @@ resource "aws_appautoscaling_target" "dynamodb_table_read_target" {
 
 resource "aws_appautoscaling_policy" "dynamodb_table_read_policy" {
   count              = var.dynamodb_billing_mode == "PROVISIONED" ? 1 : 0
-  name               = "DynamoDBReadCapacityUtilization:${aws_appautoscaling_target.dynamodb_table_read_target[0].resource_id}"
+  name               = "AutoScalingPolicy-ReadCapacity-MTKBackend-${var.aws_region}-${var.availability_zone}"
   policy_type        = "TargetTrackingScaling"
   resource_id        = aws_appautoscaling_target.dynamodb_table_read_target[0].resource_id
   scalable_dimension = aws_appautoscaling_target.dynamodb_table_read_target[0].scalable_dimension
@@ -111,7 +111,7 @@ resource "aws_appautoscaling_target" "dynamodb_table_write_target" {
 
 resource "aws_appautoscaling_policy" "dynamodb_table_write_policy" {
   count              = var.dynamodb_billing_mode == "PROVISIONED" ? 1 : 0
-  name               = "DynamoDBWriteCapacityUtilization:${aws_appautoscaling_target.dynamodb_table_write_target[0].resource_id}"
+  name               = "AutoScalingPolicy-WriteCapacity-MTKBackend-${var.aws_region}-${var.availability_zone}"
   policy_type        = "TargetTrackingScaling"
   resource_id        = aws_appautoscaling_target.dynamodb_table_write_target[0].resource_id
   scalable_dimension = aws_appautoscaling_target.dynamodb_table_write_target[0].scalable_dimension
@@ -128,7 +128,7 @@ resource "aws_appautoscaling_policy" "dynamodb_table_write_policy" {
 # DynamoDB Stream (for global tables and change tracking)
 resource "aws_dynamodb_table" "user_locations_with_stream" {
   count          = var.enable_global_tables ? 1 : 0
-  name           = "${var.environment}-${var.aws_region}-user-locations-stream"
+  name           = "DynamoDB-UserLocationsStream-MTKBackend-${var.aws_region}-${var.availability_zone}"
   billing_mode   = var.dynamodb_billing_mode
   hash_key       = "user_id"
   range_key      = "date_time"
@@ -159,6 +159,6 @@ resource "aws_dynamodb_table" "user_locations_with_stream" {
   
   # Tags
   tags = {
-    Name = "${var.environment}_${var.aws_region}_user_locations_stream_table"
+    Name = "DynamoDB-UserLocationsStream-MTKBackend-${var.aws_region}-${var.availability_zone}"
   }
 } 

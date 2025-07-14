@@ -27,10 +27,11 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 class TerraformDeployer:
-    def __init__(self, environment: str, terraform_dir: str = "iac"):
+    def __init__(self, environment: str, terraform_dir: str = "iac", tf_file: str = None):
         self.environment = environment
         self.terraform_dir = terraform_dir
-        self.tf_manager = TerraformManager(environment, terraform_dir)
+        self.tf_file = tf_file
+        self.tf_manager = TerraformManager(environment, terraform_dir, tf_file)
         
     def check_prerequisites(self) -> bool:
         """Check if all prerequisites are met."""
@@ -60,7 +61,7 @@ class TerraformDeployer:
             return False
         
         # Check if required AWS services are available
-        required_services = ["ec2", "rds", "dynamodb", "iam", "cloudwatch"]
+        required_services = ["ec2", "rds", "dynamodb", "iam", "cloudwatch", "apigateway", "cognito-idp", "wafv2", "lambda"]
         for service in required_services:
             try:
                 if service == "ec2":
@@ -73,6 +74,14 @@ class TerraformDeployer:
                     subprocess.run(["aws", "iam", "get-user"], capture_output=True, check=True)
                 elif service == "cloudwatch":
                     subprocess.run(["aws", "cloudwatch", "list-metrics"], capture_output=True, check=True)
+                elif service == "apigateway":
+                    subprocess.run(["aws", "apigateway", "get-rest-apis"], capture_output=True, check=True)
+                elif service == "cognito-idp":
+                    subprocess.run(["aws", "cognito-idp", "list-user-pools", "--max-items", "1"], capture_output=True, check=True)
+                elif service == "wafv2":
+                    subprocess.run(["aws", "wafv2", "list-web-acls", "--scope", "REGIONAL"], capture_output=True, check=True)
+                elif service == "lambda":
+                    subprocess.run(["aws", "lambda", "list-functions", "--max-items", "1"], capture_output=True, check=True)
                 logger.info(f"AWS {service.upper()} service is accessible")
             except subprocess.CalledProcessError:
                 logger.error(f"AWS {service.upper()} service is not accessible")
@@ -168,12 +177,49 @@ class TerraformDeployer:
                     return False
                 logger.info(f"DynamoDB table {table_name} verified")
             
+            # Check API Gateway
+            if 'api_gateway_id' in outputs:
+                api_id = outputs['api_gateway_id']['value']
+                result = subprocess.run(
+                    ["aws", "apigateway", "get-rest-api", "--rest-api-id", api_id],
+                    capture_output=True, text=True
+                )
+                if result.returncode != 0:
+                    logger.error(f"API Gateway {api_id} not found")
+                    return False
+                logger.info(f"API Gateway {api_id} verified")
+            
+            # Check Cognito User Pool
+            if 'cognito_user_pool_id' in outputs:
+                user_pool_id = outputs['cognito_user_pool_id']['value']
+                result = subprocess.run(
+                    ["aws", "cognito-idp", "describe-user-pool", "--user-pool-id", user_pool_id],
+                    capture_output=True, text=True
+                )
+                if result.returncode != 0:
+                    logger.error(f"Cognito User Pool {user_pool_id} not found")
+                    return False
+                logger.info(f"Cognito User Pool {user_pool_id} verified")
+            
+            # Check Lambda functions
+            if 'lambda_function_names' in outputs:
+                function_names = outputs['lambda_function_names']['value']
+                for function_name in function_names:
+                    result = subprocess.run(
+                        ["aws", "lambda", "get-function", "--function-name", function_name],
+                        capture_output=True, text=True
+                    )
+                    if result.returncode != 0:
+                        logger.error(f"Lambda function {function_name} not found")
+                        return False
+                    logger.info(f"Lambda function {function_name} verified")
+            
+            logger.info("All resources verified successfully")
+            return True
+            
         except Exception as e:
-            logger.error(f"Error during deployment verification: {e}")
+            logger.error(f"Error during verification: {e}")
             return False
-        
-        logger.info("Deployment verification completed successfully")
-        return True
     
     def deploy(self, auto_approve: bool = False, detailed: bool = False) -> bool:
         """Complete deployment workflow."""
@@ -208,25 +254,14 @@ class TerraformDeployer:
         return True
     
     def destroy_infrastructure(self, auto_approve: bool = False) -> bool:
-        """Destroy infrastructure."""
-        logger.warning(f"Starting infrastructure destruction for environment: {self.environment}")
+        """Destroy the infrastructure."""
+        logger.warning(f"Destroying infrastructure for environment: {self.environment}")
         
-        # Check prerequisites
-        if not self.check_prerequisites():
-            logger.error("Prerequisites check failed")
-            return False
-        
-        # Initialize Terraform
-        if not self.tf_manager.init():
-            logger.error("Failed to initialize Terraform")
-            return False
-        
-        # Destroy infrastructure
         if not self.tf_manager.destroy(auto_approve=auto_approve):
             logger.error("Failed to destroy infrastructure")
             return False
         
-        logger.info(f"Infrastructure destruction completed for environment: {self.environment}")
+        logger.info(f"Infrastructure destroyed successfully for environment: {self.environment}")
         return True
     
     def get_deployment_info(self) -> Optional[Dict]:
@@ -246,90 +281,52 @@ class TerraformDeployer:
         }
         
         # Add resource information
-        for key, value in outputs.items():
-            if isinstance(value, dict) and 'value' in value:
-                deployment_info["resources"][key] = value['value']
+        if 'vpc_id' in outputs:
+            deployment_info["resources"]["vpc"] = outputs['vpc_id']['value']
+        if 'aurora_cluster_id' in outputs:
+            deployment_info["resources"]["aurora_cluster"] = outputs['aurora_cluster_id']['value']
+        if 'dynamodb_table_name' in outputs:
+            deployment_info["resources"]["dynamodb_table"] = outputs['dynamodb_table_name']['value']
+        if 'api_gateway_id' in outputs:
+            deployment_info["resources"]["api_gateway"] = outputs['api_gateway_id']['value']
+        if 'cognito_user_pool_id' in outputs:
+            deployment_info["resources"]["cognito_user_pool"] = outputs['cognito_user_pool_id']['value']
+        if 'lambda_function_names' in outputs:
+            deployment_info["resources"]["lambda_functions"] = outputs['lambda_function_names']['value']
         
         return deployment_info
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="MTK Backend Terraform Deployment Script",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""
-Examples:
-  python terraform_deploy.py dev deploy
-  python terraform_deploy.py qa deploy --auto-approve
-  python terraform_deploy.py prod deploy --detailed
-  python terraform_deploy.py dev destroy --auto-approve
-  python terraform_deploy.py qa info
-        """
-    )
-    
-    parser.add_argument(
-        "environment",
-        choices=["dev", "qa", "prod"],
-        help="Environment to work with"
-    )
-    
-    parser.add_argument(
-        "action",
-        choices=["deploy", "destroy", "info", "validate", "plan"],
-        help="Action to perform"
-    )
-    
-    parser.add_argument(
-        "--terraform-dir",
-        default="iac",
-        help="Directory containing Terraform files (default: iac)"
-    )
-    
-    parser.add_argument(
-        "--auto-approve",
-        action="store_true",
-        help="Skip interactive approval"
-    )
-    
-    parser.add_argument(
-        "--detailed",
-        action="store_true",
-        help="Show detailed output"
-    )
+    parser = argparse.ArgumentParser(description="MTK Backend Terraform Deployment Script")
+    parser.add_argument("environment", choices=["dev", "qa", "prod"], help="Environment to deploy")
+    parser.add_argument("--terraform-dir", default="iac", help="Terraform directory path")
+    parser.add_argument("--tf-file", help="Specific Terraform file to target")
+    parser.add_argument("--auto-approve", action="store_true", help="Auto-approve changes")
+    parser.add_argument("--detailed", action="store_true", help="Show detailed plan output")
+    parser.add_argument("--destroy", action="store_true", help="Destroy infrastructure")
+    parser.add_argument("--info", action="store_true", help="Get deployment information")
     
     args = parser.parse_args()
     
     try:
-        # Initialize deployer
-        deployer = TerraformDeployer(args.environment, args.terraform_dir)
+        deployer = TerraformDeployer(args.environment, args.terraform_dir, args.tf_file)
         
-        # Perform the requested action
-        success = False
-        
-        if args.action == "deploy":
-            success = deployer.deploy(auto_approve=args.auto_approve, detailed=args.detailed)
-        
-        elif args.action == "destroy":
-            success = deployer.destroy_infrastructure(auto_approve=args.auto_approve)
-        
-        elif args.action == "info":
+        if args.destroy:
+            success = deployer.destroy_infrastructure(args.auto_approve)
+        elif args.info:
             info = deployer.get_deployment_info()
             if info:
                 print(json.dumps(info, indent=2))
-                success = True
             else:
-                success = False
+                sys.exit(1)
+        else:
+            success = deployer.deploy(args.auto_approve, args.detailed)
         
-        elif args.action == "validate":
-            success = deployer.validate_configuration()
-        
-        elif args.action == "plan":
-            success = deployer.create_plan(detailed=args.detailed)
-        
-        # Exit with appropriate code
-        sys.exit(0 if success else 1)
-    
+        if not success:
+            sys.exit(1)
+            
     except Exception as e:
-        logger.error(f"Error: {e}")
+        logger.error(f"Deployment failed: {e}")
         sys.exit(1)
 
 if __name__ == "__main__":
