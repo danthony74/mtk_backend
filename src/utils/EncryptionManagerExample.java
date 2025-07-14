@@ -1,4 +1,4 @@
-package com.mindthekid.geo.cqrs.shared.utils;
+package com.mindthekid.utils;
 
 /**
  * EncryptionManager Usage Examples

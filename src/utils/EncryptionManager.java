@@ -1,4 +1,4 @@
-package com.mindthekid.geo.cqrs.shared.utils;
+package com.mindthekid.utils;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;

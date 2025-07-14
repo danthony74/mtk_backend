@@ -1,6 +1,6 @@
 package com.mindthekid.geo.cqrs.test.shared.utils;
 
-import com.mindthekid.geo.cqrs.shared.utils.EncryptionManager;
+import com.mindthekid.utils.EncryptionManager;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
