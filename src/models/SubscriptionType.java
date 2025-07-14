@@ -1,4 +1,4 @@
-package com.mindthekid.geo.cqrs.shared.models;
+package com.mindthekid.models;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

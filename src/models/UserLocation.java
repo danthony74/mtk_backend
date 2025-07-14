@@ -1,4 +1,4 @@
-package com.mindthekid.geo.cqrs.shared.models;
+package com.mindthekid.models;
 
 import com.amazonaws.services.dynamodbv2.datamodeling.*;
 import java.time.Instant;

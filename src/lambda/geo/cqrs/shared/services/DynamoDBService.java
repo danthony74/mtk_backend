@@ -9,7 +9,7 @@ import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.dynamodbv2.model.ConditionalCheckFailedException;
 import com.amazonaws.services.dynamodbv2.model.DeleteItemRequest;
 import com.amazonaws.services.dynamodbv2.model.DeleteItemResult;
-import com.mindthekid.cqrs.shared.models.UserLocation;
+import com.mindthekid.models.UserLocation;
 
 import java.util.*;
 import java.util.stream.Collectors;

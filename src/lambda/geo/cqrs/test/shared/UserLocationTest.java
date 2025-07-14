@@ -1,6 +1,6 @@
 package com.mindthekid.geo.cqrs.test.shared;
 
-import com.mindthekid.cqrs.shared.models.UserLocation;
+import com.mindthekid.models.UserLocation;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

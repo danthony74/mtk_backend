@@ -1,4 +1,4 @@
-package com.mindthekid.geo.cqrs.shared.models;
+package com.mindthekid.models;
 
 import java.util.List;
 import java.util.Optional;

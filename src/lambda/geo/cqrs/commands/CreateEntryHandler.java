@@ -6,7 +6,7 @@ import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mindthekid.cqrs.shared.models.UserLocation;
+import com.mindthekid.models.UserLocation;
 import com.mindthekid.cqrs.shared.dto.ApiResponse;
 import com.mindthekid.cqrs.shared.services.DynamoDBService;
 

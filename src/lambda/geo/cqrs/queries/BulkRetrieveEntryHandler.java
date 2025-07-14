@@ -5,9 +5,9 @@ import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mindthekid.geo.cqrs.shared.models.UserLocation;
-import com.mindthekid.geo.cqrs.shared.dto.ApiResponse;
+import com.mindthekid.models.UserLocation;
 import com.mindthekid.geo.cqrs.shared.services.DynamoDBService;
+import com.mindthekid.geo.cqrs.shared.dto.ApiResponse;
 
 import java.util.List;
 import java.util.Map;
